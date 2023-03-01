@@ -4,7 +4,7 @@ config();
 
 const kafka = new Kafka({
   clientId: "my-app",
-  brokers: ["localhost:9092"],
+  brokers: ["localhost:9093"],
 });
 
 const consumer = kafka.consumer({ groupId: "test-group" });
@@ -12,18 +12,20 @@ const consumer = kafka.consumer({ groupId: "test-group" });
 const run = async () => {
   await consumer.connect();
   await consumer.subscribe({
-    topic: process.env.TOPIC_NAME,
+    topics: [process.env.ENTERPRISES_TOPIC_NAME],
     fromBeginning: true,
   });
 
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
-      console.log({
-        topic,
-        partition,
-        offset: message.offset,
-        value: message.value.toString(),
-      });
+      console.log(
+        {
+          topic,
+          partition,
+          offset: message.offset,
+          value: JSON.parse(message.value.toString(), null, 2),
+        }
+      );
     },
   });
 };
